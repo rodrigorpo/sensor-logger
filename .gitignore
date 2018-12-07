@@ -1,1 +1,5 @@
 anotacoes.txt
+.idea/
+sensor-logger.iml
+src/main/main.iml
+src/main/target
