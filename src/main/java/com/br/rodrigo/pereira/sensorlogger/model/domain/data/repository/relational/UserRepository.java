@@ -8,5 +8,5 @@ import org.springframework.stereotype.Repository;
 public interface UserRepository extends CrudRepository<User, Long> {
     User save(User user);
 
-    User findByUserIdentity_UserIdentityId(Long id);
+    User findByUsername(String username);
 }

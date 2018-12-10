@@ -2,9 +2,9 @@ package com.br.rodrigo.pereira.sensorlogger.model.domain.data.persistent.documen
 
 import com.br.rodrigo.pereira.sensorlogger.model.domain.data.persistent.relational.Location;
 import com.br.rodrigo.pereira.sensorlogger.model.domain.data.persistent.relational.Measures;
-import com.br.rodrigo.pereira.sensorlogger.model.domain.data.persistent.relational.UserIdentity;
+import com.br.rodrigo.pereira.sensorlogger.model.domain.data.persistent.relational.User;
 import com.br.rodrigo.pereira.sensorlogger.model.domain.enums.OperationType;
-import com.br.rodrigo.pereira.sensorlogger.model.util.converter.LocalDateTimeAttributeConverter;
+import com.br.rodrigo.pereira.sensorlogger.util.converter.LocalDateTimeAttributeConverter;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.persistence.*;
@@ -20,9 +20,7 @@ public class Log implements Serializable {
     @Enumerated(EnumType.STRING)
     private OperationType operationType;
 
-    @OneToOne
-    @JoinColumn(foreignKey = @ForeignKey(name = "userId"))
-    private UserIdentity userIdentity;
+    private User user;
 
     @OneToOne
     @JoinColumn(foreignKey = @ForeignKey(name = "measureId"))

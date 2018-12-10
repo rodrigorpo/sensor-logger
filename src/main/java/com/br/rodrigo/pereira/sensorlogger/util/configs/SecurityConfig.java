@@ -1,4 +1,4 @@
-//package com.br.rodrigo.pereira.sensorlogger.model.util.configs;
+//package com.br.rodrigo.pereira.sensorlogger.util.configs;
 //
 //import org.springframework.beans.factory.annotation.Autowired;
 //import org.springframework.context.annotation.Bean;
