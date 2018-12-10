@@ -1,4 +1,4 @@
-package com.br.rodrigo.pereira.sensorlogger.model.util.converter;
+package com.br.rodrigo.pereira.sensorlogger.util.converter;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;

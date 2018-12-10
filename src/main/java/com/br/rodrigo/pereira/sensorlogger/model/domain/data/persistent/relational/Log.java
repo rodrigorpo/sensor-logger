@@ -1,7 +1,7 @@
 package com.br.rodrigo.pereira.sensorlogger.model.domain.data.persistent.relational;
 
 import com.br.rodrigo.pereira.sensorlogger.model.domain.enums.OperationType;
-import com.br.rodrigo.pereira.sensorlogger.model.util.converter.LocalDateTimeAttributeConverter;
+import com.br.rodrigo.pereira.sensorlogger.util.converter.LocalDateTimeAttributeConverter;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -27,7 +27,7 @@ public class Log implements Serializable {
 
     @OneToOne
     @JoinColumn(foreignKey = @ForeignKey(name = "userId"))
-    private UserIdentity userIdentity;
+    private User user;
 
     @OneToOne
     @JoinColumn(foreignKey = @ForeignKey(name = "measureId"))
@@ -37,9 +37,9 @@ public class Log implements Serializable {
     @JoinColumn(foreignKey = @ForeignKey(name = "locationId"))
     private Location location;
 
-    public Log(OperationType operationType, UserIdentity userIdentity, Measures measures, Location location, Long httpStatus, String httpStatusReason){
+    public Log(OperationType operationType, User user, Measures measures, Location location, Long httpStatus, String httpStatusReason){
         this.operationType = operationType;
-        this.userIdentity = userIdentity;
+        this.user = user;
         this.measures = measures;
         this.location = location;
         this.httpStatus = httpStatus;

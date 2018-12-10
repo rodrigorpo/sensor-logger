@@ -1,4 +1,4 @@
-package com.br.rodrigo.pereira.sensorlogger.model.util.configs;
+package com.br.rodrigo.pereira.sensorlogger.util.configs;
 
 import lombok.Data;
 import org.springframework.context.annotation.Configuration;

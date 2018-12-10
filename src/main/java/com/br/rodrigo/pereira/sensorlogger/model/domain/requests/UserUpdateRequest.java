@@ -18,4 +18,6 @@ public class UserUpdateRequest {
     private LocalDate birthday;
 
     private String username;
+
+    private String password;
 }
