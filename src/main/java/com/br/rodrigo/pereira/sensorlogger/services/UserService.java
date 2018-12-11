@@ -14,6 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 public class UserService {
 
@@ -64,7 +67,7 @@ public class UserService {
             throw new BusinessException("Senha incorreta para update!", HttpStatus.UNPROCESSABLE_ENTITY.toString());
         }
         User newUserExists = userRepository.findByUsername(userIdentityUpdateRequest.getNewUsername());
-        if( newUserExists != null){
+        if( newUserExists != null && newUserExists != user){
             logRepository.save(new Log(OperationType.UPDATE, user, null, null, Long.valueOf(HttpStatus.UNPROCESSABLE_ENTITY.value()), HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase()));
             throw new BusinessException("Username já está em uso!", HttpStatus.UNPROCESSABLE_ENTITY.toString());
         }
@@ -106,4 +109,20 @@ public class UserService {
         }
         return user;
     }
+
+    public List<User> getAllUsers(){
+        return userRepository.findAll();
+    }
+
+    public User getUser(String username, String token){
+        String[] tokenSplited = token.split("@");
+
+        if(!tokenSplited[0].equals(username)){
+            logRepository.save(new Log(OperationType.SELECT, null, null, null, Long.valueOf(HttpStatus.UNPROCESSABLE_ENTITY.value()), HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase()));
+            throw new BusinessException("Você só pode buscar pelo seu usuário", HttpStatus.UNPROCESSABLE_ENTITY.toString());
+        }
+
+        return userRepository.findByUsername(username);
+    }
+
 }

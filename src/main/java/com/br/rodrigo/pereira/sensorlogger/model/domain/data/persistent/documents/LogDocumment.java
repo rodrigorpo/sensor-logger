@@ -4,33 +4,31 @@ import com.br.rodrigo.pereira.sensorlogger.model.domain.data.persistent.relation
 import com.br.rodrigo.pereira.sensorlogger.model.domain.data.persistent.relational.Measures;
 import com.br.rodrigo.pereira.sensorlogger.model.domain.data.persistent.relational.User;
 import com.br.rodrigo.pereira.sensorlogger.model.domain.enums.OperationType;
-import com.br.rodrigo.pereira.sensorlogger.util.converter.LocalDateTimeAttributeConverter;
+import com.br.rodrigo.pereira.sensorlogger.util.HttpDocument;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.http.HttpStatus;
 
-import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Document
-public class Log implements Serializable {
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class LogDocumment implements Serializable {
 
-    @Convert(converter = LocalDateTimeAttributeConverter.class)
     private LocalDateTime instant;
 
-    @Enumerated(EnumType.STRING)
     private OperationType operationType;
 
     private User user;
 
-    @OneToOne
-    @JoinColumn(foreignKey = @ForeignKey(name = "measureId"))
     private Measures measures;
 
-    @OneToOne
-    @JoinColumn(foreignKey = @ForeignKey(name = "locationId"))
     private Location location;
 
-    private Long httpStatus;
-
-    private String httpStatusReason;
+    private HttpDocument httpStatus;
 }

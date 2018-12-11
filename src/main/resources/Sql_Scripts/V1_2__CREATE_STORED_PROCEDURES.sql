@@ -1,6 +1,6 @@
 --Stored Procedures
 
---Registrar Log (operacao, id_pessoa, id_medida, id_local)
+--Registrar LogDocumment (operacao, id_pessoa, id_medida, id_local)
 --Sem Retorno
 CREATE OR REPLACE FUNCTION sensor_logger.fn_log (
   p_operacao VARCHAR(40),
