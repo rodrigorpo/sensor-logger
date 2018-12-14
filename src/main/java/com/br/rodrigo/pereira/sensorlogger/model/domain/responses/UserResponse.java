@@ -1,4 +1,4 @@
-package com.br.rodrigo.pereira.sensorlogger.model.domain.requests;
+package com.br.rodrigo.pereira.sensorlogger.model.domain.responses;
 
 import com.br.rodrigo.pereira.sensorlogger.model.domain.enums.Privileges;
 import com.br.rodrigo.pereira.sensorlogger.model.domain.enums.UserStatus;
@@ -6,14 +6,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import java.time.LocalDate;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserCreateRequest {
+public class UserResponse {
+
+    private Long userId;
 
     private String name;
 
@@ -21,12 +21,10 @@ public class UserCreateRequest {
 
     private LocalDate birthday;
 
-    private UserStatus status;
-
     private String username;
 
-    private String password;
-
-    @Enumerated(EnumType.STRING)
     private Privileges privileges;
+
+    private UserStatus userStatus;
+
 }

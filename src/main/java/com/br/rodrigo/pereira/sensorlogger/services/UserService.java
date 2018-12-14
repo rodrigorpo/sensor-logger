@@ -1,10 +1,8 @@
 package com.br.rodrigo.pereira.sensorlogger.services;
 
-import com.br.rodrigo.pereira.sensorlogger.model.domain.data.persistent.relational.Log;
+import com.br.rodrigo.pereira.sensorlogger.model.domain.data.persistent.document.Log;
 import com.br.rodrigo.pereira.sensorlogger.model.domain.data.persistent.relational.User;
-import com.br.rodrigo.pereira.sensorlogger.model.domain.data.persistent.relational.UserIdentity;
-import com.br.rodrigo.pereira.sensorlogger.model.domain.data.repository.relational.LogRepository;
-import com.br.rodrigo.pereira.sensorlogger.model.domain.data.repository.relational.UserIdentityRepository;
+import com.br.rodrigo.pereira.sensorlogger.model.domain.data.repository.document.LogRepository;
 import com.br.rodrigo.pereira.sensorlogger.model.domain.data.repository.relational.UserRepository;
 import com.br.rodrigo.pereira.sensorlogger.model.domain.enums.OperationType;
 import com.br.rodrigo.pereira.sensorlogger.model.domain.requests.UserCreateRequest;
@@ -12,10 +10,13 @@ import com.br.rodrigo.pereira.sensorlogger.model.domain.requests.UserDeleteReque
 import com.br.rodrigo.pereira.sensorlogger.model.domain.requests.UserIdentityUpdateRequest;
 import com.br.rodrigo.pereira.sensorlogger.model.domain.requests.UserUpdateRequest;
 import com.br.rodrigo.pereira.sensorlogger.model.exceptions.BusinessException;
-import com.br.rodrigo.pereira.sensorlogger.model.exceptions.NotFoundException;
+import com.br.rodrigo.pereira.sensorlogger.util.HttpDocument;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class UserService {
@@ -24,114 +25,116 @@ public class UserService {
     private UserRepository userRepository;
 
     @Autowired
-    private UserIdentityRepository userIdentityRepository;
-
-    @Autowired
     private HashService hashService;
-
+    
     @Autowired
     private LogRepository logRepository;
 
     public void createUserRegister(UserCreateRequest userCreateRequest) {
 
-        UserIdentity userIdentityExists = userIdentityRepository.findByUsername(userCreateRequest.getUsername());
-        if (userIdentityExists != null) {
-            logRepository.save(new Log(OperationType.INSERT, userIdentityExists, null, null, Long.valueOf(HttpStatus.UNPROCESSABLE_ENTITY.value()), HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase()));
-            throw new BusinessException("Usuário já existente!", HttpStatus.UNPROCESSABLE_ENTITY.toString());
+        User userExists = userRepository.findByUsername(userCreateRequest.getUsername());
+        if (userExists != null) {
+            BusinessException businessException = new BusinessException("Usuário já existente!", HttpStatus.UNPROCESSABLE_ENTITY.toString());
+            logRepository.save(new Log(LocalDateTime.now(), OperationType.INSERT, userExists, null, null, new HttpDocument(HttpStatus.UNPROCESSABLE_ENTITY), businessException));
+            throw businessException;
         }
 
-        UserIdentity userIdentity = createUserIdentity(new UserIdentity(
+        User newUser =  userRepository.save(new User(
+                userCreateRequest.getName(),
+                userCreateRequest.getCourse(),
+                userCreateRequest.getBirthday(),
                 userCreateRequest.getUsername(),
                 hashService.hashPassword(userCreateRequest.getPassword()),
                 userCreateRequest.getPrivileges(),
                 userCreateRequest.getStatus()));
-
-        createUser(new User(
-                userCreateRequest.getName(),
-                userCreateRequest.getCourse(),
-                userCreateRequest.getBirthday(),
-                userIdentity
-        ));
-        logRepository.save(new Log(OperationType.INSERT, userIdentity, null, null, Long.valueOf(HttpStatus.OK.value()), HttpStatus.OK.getReasonPhrase()));
+        logRepository.save(new Log(LocalDateTime.now(),OperationType.INSERT, newUser, null, null, new HttpDocument(HttpStatus.OK)));
     }
 
-    public void updateUserRegister(UserUpdateRequest userUpdateRequest){
-        UserIdentity userIdentity = userIdentityRepository.findByUsername(userUpdateRequest.getUsername());
-        if (userIdentity == null) {
-            logRepository.save(new Log(OperationType.UPDATE, userIdentity, null, null, Long.valueOf(HttpStatus.UNPROCESSABLE_ENTITY.value()), HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase()));
-            throw new BusinessException("Usuário não existe!", HttpStatus.UNPROCESSABLE_ENTITY.toString());
+    public void updateUserGeneralRegister(UserUpdateRequest userUpdateRequest){
+        User user = verifyUserByUsername(userUpdateRequest.getUsername(), "Usuário não encontrado!", OperationType.UPDATE);
+
+        if(!user.getPassword().equals(hashService.hashPassword(userUpdateRequest.getPassword()))){
+            verifyPassword(user, "Senha incorreta para update!");
         }
 
-        updateUser(userRepository.findByUserIdentity_UserIdentityId(userIdentity.getUserIdentityId()), userUpdateRequest);
-        logRepository.save(new Log(OperationType.UPDATE, userIdentity, null, null, Long.valueOf(HttpStatus.OK.value()), HttpStatus.OK.getReasonPhrase()));
+        User userUpdated = updateUser(user, userUpdateRequest);
+        logRepository.save(new Log(LocalDateTime.now(), OperationType.UPDATE, userUpdated, null, null, new HttpDocument(HttpStatus.OK)));
     }
 
     public void updateUserIdentityRegister(UserIdentityUpdateRequest userIdentityUpdateRequest){
-        UserIdentity userIdentity = userIdentityRepository.findByUsername(userIdentityUpdateRequest.getOldUsername());
-        if (userIdentity == null) {
-            logRepository.save(new Log(OperationType.UPDATE, userIdentity, null, null, Long.valueOf(HttpStatus.UNPROCESSABLE_ENTITY.value()), HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase()));
-            throw new BusinessException("Usuário não existe!", HttpStatus.UNPROCESSABLE_ENTITY.toString());
+        User user = verifyUserByUsername(userIdentityUpdateRequest.getOldUsername(), "Usuário não existe!", OperationType.UPDATE);
+        if(!user.getPassword().equals(hashService.hashPassword(userIdentityUpdateRequest.getOldPassword()))){
+            verifyPassword(user, "Senha incorreta para update!");
         }
-        if(userIdentity.getPassword() != hashService.hashPassword(userIdentityUpdateRequest.getOldPassword())){
-            logRepository.save(new Log(OperationType.UPDATE, userIdentity, null, null, Long.valueOf(HttpStatus.UNPROCESSABLE_ENTITY.value()), HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase()));
-            throw new BusinessException("Senha incorreta para update!", HttpStatus.UNPROCESSABLE_ENTITY.toString());
+        User newUserExists = userRepository.findByUsername(userIdentityUpdateRequest.getNewUsername());
+        if( newUserExists == null || newUserExists.getUsername().equals(user.getUsername())){
+            BusinessException businessException = new BusinessException("Username já está em uso ou é inválido!", HttpStatus.UNPROCESSABLE_ENTITY.toString());
+            logRepository.save(new Log(LocalDateTime.now(), OperationType.UPDATE, user, null, null, new HttpDocument(HttpStatus.UNPROCESSABLE_ENTITY), businessException));
+            throw businessException;
         }
-        updateUserIdentity(userIdentity, userIdentityUpdateRequest);
-        logRepository.save(new Log(OperationType.UPDATE, userIdentity, null, null, Long.valueOf(HttpStatus.OK.value()), HttpStatus.OK.getReasonPhrase()));
+        updateUserIdentity(user, userIdentityUpdateRequest);
+        logRepository.save(new Log(LocalDateTime.now(), OperationType.UPDATE, user, null, null, new HttpDocument(HttpStatus.OK)));
     }
 
-    public void deleteUserIdentity(UserDeleteRequest userDeleteRequest){
-        UserIdentity userIdentity = userIdentityRepository.findByUsername(userDeleteRequest.getUsername());
-        if (userIdentity == null) {
-            logRepository.save(new Log(OperationType.DELETE, userIdentity, null, null, Long.valueOf(HttpStatus.UNPROCESSABLE_ENTITY.value()), HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase()));
-            throw new BusinessException("Usuário não existe!", HttpStatus.UNPROCESSABLE_ENTITY.toString());
+    private void verifyPassword(User user, String exceptionMessage){
+        BusinessException businessException = new BusinessException(exceptionMessage, HttpStatus.UNPROCESSABLE_ENTITY.toString());
+        logRepository.save(new Log(LocalDateTime.now(), OperationType.UPDATE, user, null, null, new HttpDocument(HttpStatus.UNPROCESSABLE_ENTITY), businessException));
+        throw businessException;
+    }
+
+    public void deleteUser(UserDeleteRequest userDeleteRequest){
+        User user = verifyUserByUsername(userDeleteRequest.getUsername(), "Usuário não existe!", OperationType.DELETE);
+
+        if(!user.getPassword().equals(hashService.hashPassword(userDeleteRequest.getPassword())) || !user.getBirthday().equals(userDeleteRequest.getBirthday())){
+            BusinessException businessException = new BusinessException("Não foi possível proceder o delete. Dados incorretos!", HttpStatus.UNPROCESSABLE_ENTITY.toString());
+            logRepository.save(new Log(LocalDateTime.now(), OperationType.DELETE, user, null, null, new HttpDocument(HttpStatus.UNPROCESSABLE_ENTITY), businessException));
+            throw businessException;
         }
-
-        User user = userRepository.findByUserIdentity_UserIdentityId(userIdentity.getUserIdentityId());
-
-        if(user.getBirthday() != userDeleteRequest.getBirthday() || userIdentity.getPassword() != hashService.hashPassword(userDeleteRequest.getPassword())){
-            logRepository.save(new Log(OperationType.DELETE, userIdentity, null, null, Long.valueOf(HttpStatus.UNPROCESSABLE_ENTITY.value()), HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase()));
-            throw new BusinessException("Usuário não existe!", HttpStatus.UNPROCESSABLE_ENTITY.toString());
-        }
-
-        deleteUser(user, userIdentity);
-        logRepository.save(new Log(OperationType.DELETE, userIdentity, null, null, Long.valueOf(HttpStatus.OK.value()), HttpStatus.OK.getReasonPhrase()));
+        userRepository.delete(user);
+        logRepository.save(new Log(LocalDateTime.now(), OperationType.DELETE, user, null, null, new HttpDocument(HttpStatus.OK)));
     }
 
-    public UserIdentity createUserIdentity(UserIdentity user) {
-        return userIdentityRepository.save(user);
-    }
-
-    public void createUser(User user) {
-        userRepository.save(user);
-    }
-
-    public void updateUser(User user, UserUpdateRequest userUpdateRequest){
+    private User updateUser(User user, UserUpdateRequest userUpdateRequest){
         user.setName(userUpdateRequest.getName());
         user.setCourse(userUpdateRequest.getCourse());
         user.setBirthday(userUpdateRequest.getBirthday());
-        userRepository.save(user);
+        return userRepository.save(user);
     }
 
-    public void updateUserIdentity(UserIdentity userIdentity, UserIdentityUpdateRequest userIdentityUpdateRequest){
+    private User updateUserIdentity(User userIdentity, UserIdentityUpdateRequest userIdentityUpdateRequest){
         userIdentity.setUsername(userIdentityUpdateRequest.getNewUsername());
         userIdentity.setPassword(hashService.hashPassword(userIdentityUpdateRequest.getNewPassword()));
-        userIdentity.setPrivileges(userIdentityUpdateRequest.getPrivileges());
         userIdentity.setUserStatus(userIdentityUpdateRequest.getUserStatus());
-        userIdentityRepository.save(userIdentity);
+        return userRepository.save(userIdentity);
     }
 
-    public void deleteUser(User user, UserIdentity userIdentity){
-        userIdentityRepository.delete(userIdentity);
-        userRepository.delete(user);
+    private User verifyUserByUsername(String username, String failMessage, OperationType operationType){
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            BusinessException businessException = new BusinessException(failMessage, HttpStatus.UNPROCESSABLE_ENTITY.toString());
+            logRepository.save(new Log(LocalDateTime.now(), operationType, null, null, null, new HttpDocument(HttpStatus.UNPROCESSABLE_ENTITY), businessException));
+            throw businessException;
+        }
+        return user;
     }
 
-    public User findById(Long id){
-        return userRepository.findById(id).orElseThrow(() ->
-            new NotFoundException("Usuário não existente!", HttpStatus.NOT_FOUND.toString()));
+    public List<User> getAllUsers(){
+        BusinessException businessException = new BusinessException("Todos os usuários buscados", HttpStatus.OK.toString());
+        logRepository.save(new Log(LocalDateTime.now(), OperationType.SELECT, null, null, null, new HttpDocument(HttpStatus.OK), businessException));
+        return userRepository.findAll();
     }
 
-    public UserIdentity findByUserIdentityId(String username){
-        return userIdentityRepository.findByUsername(username);
+    public User getUser(String username, String token){
+        String[] tokenSplited = token.split("@");
+
+        if(!tokenSplited[0].equals(username)){
+            BusinessException businessException = new BusinessException("Você só pode buscar pelo seu usuário", HttpStatus.UNPROCESSABLE_ENTITY.toString());
+            logRepository.save(new Log(LocalDateTime.now(), OperationType.SELECT, userRepository.findByUsername(username), null, null, new HttpDocument(HttpStatus.UNPROCESSABLE_ENTITY), businessException));
+            throw businessException;
+        }
+        User user = userRepository.findByUsername(username);
+        logRepository.save(new Log(LocalDateTime.now(), OperationType.SELECT, user, null, null, new HttpDocument(HttpStatus.OK)));
+        return user;
     }
+
 }

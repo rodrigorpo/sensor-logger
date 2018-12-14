@@ -1,25 +1,27 @@
 package com.br.rodrigo.pereira.sensorlogger.services;
 
 import com.br.rodrigo.pereira.sensorlogger.model.domain.data.AuthenticationData;
-import com.br.rodrigo.pereira.sensorlogger.model.domain.data.persistent.relational.Log;
-import com.br.rodrigo.pereira.sensorlogger.model.domain.data.persistent.relational.UserIdentity;
-import com.br.rodrigo.pereira.sensorlogger.model.domain.data.repository.relational.LogRepository;
-import com.br.rodrigo.pereira.sensorlogger.model.domain.data.repository.relational.UserIdentityRepository;
+import com.br.rodrigo.pereira.sensorlogger.model.domain.data.persistent.document.Log;
+import com.br.rodrigo.pereira.sensorlogger.model.domain.data.persistent.relational.User;
+import com.br.rodrigo.pereira.sensorlogger.model.domain.data.repository.document.LogRepository;
+import com.br.rodrigo.pereira.sensorlogger.model.domain.data.repository.relational.UserRepository;
 import com.br.rodrigo.pereira.sensorlogger.model.domain.enums.OperationType;
 import com.br.rodrigo.pereira.sensorlogger.model.domain.enums.UserStatus;
 import com.br.rodrigo.pereira.sensorlogger.model.domain.requests.AuthenticationKeyRequest;
 import com.br.rodrigo.pereira.sensorlogger.model.domain.requests.AuthenticationUserRequest;
 import com.br.rodrigo.pereira.sensorlogger.model.exceptions.BusinessException;
-import com.br.rodrigo.pereira.sensorlogger.model.exceptions.NotFoundException;
+import com.br.rodrigo.pereira.sensorlogger.util.HttpDocument;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 
 @Service
 public class AuthenticateService {
 
     @Autowired
-    private UserIdentityRepository userRepository;
+    private UserRepository userRepository;
 
     @Autowired
     private HashService hashService;
@@ -29,7 +31,7 @@ public class AuthenticateService {
 
     public AuthenticationData verifyCredentials(AuthenticationUserRequest authenticationUserRequest) {
 
-        UserIdentity userData = findByUsername(authenticationUserRequest.getUsername());
+        User userData = findByUsername(authenticationUserRequest.getUsername());
 
         String passwordHashed = hashService.hashPassword(authenticationUserRequest.getPassword());
 
@@ -38,25 +40,26 @@ public class AuthenticateService {
         boolean isActive = (userData.getUserStatus() == UserStatus.ACTIVE);
 
         if (!isValidUsername || !isValidPassword || !isActive) {
-            logRepository.save(new Log(OperationType.LOGIN, userData, null, null, Long.valueOf(HttpStatus.UNPROCESSABLE_ENTITY.value()), HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase()));
-            throw new BusinessException("Usuário ou senha inválida!", HttpStatus.UNPROCESSABLE_ENTITY.toString());
+            BusinessException businessException = new BusinessException("Senha inválida ou usuário inativo!", HttpStatus.UNPROCESSABLE_ENTITY.toString());
+            logRepository.save(new Log(LocalDateTime.now(), OperationType.LOGIN, userData, null, null, new HttpDocument(HttpStatus.UNPROCESSABLE_ENTITY), businessException));
+            throw businessException;
         }
 
-        logRepository.save(new Log(OperationType.LOGIN, userData, null, null, Long.valueOf(HttpStatus.OK.value()), HttpStatus.OK.getReasonPhrase()));
+        logRepository.save(new Log(LocalDateTime.now(), OperationType.LOGIN, userData, null, null, new HttpDocument(HttpStatus.OK)));
         return new AuthenticationData(userData.getUsername(), userData.getPrivileges());
     }
 
-    public UserIdentity findByUsername(String username) {
+    private User findByUsername(String username) {
 
-        UserIdentity userIdentity = userRepository.findByUsername(username);
+        User user = userRepository.findByUsername(username);
 
-        if (userIdentity != null) {
-            return userIdentity;
+        if (user == null) {
+            BusinessException businessException = new BusinessException("Usuário não encontrado!", HttpStatus.UNPROCESSABLE_ENTITY.toString());
+            logRepository.save(new Log(LocalDateTime.now(), OperationType.LOGIN, null, null, null, new HttpDocument(HttpStatus.UNPROCESSABLE_ENTITY), businessException));
+            throw businessException;
         }
 
-        logRepository.save(new Log(OperationType.LOGIN, null, null, null, Long.valueOf(HttpStatus.NOT_FOUND.value()), HttpStatus.NOT_FOUND.getReasonPhrase()));
-
-        throw new NotFoundException("Usuário não encontrado!", HttpStatus.NOT_FOUND.toString());
+        return user;
     }
 
     public void breakAuthenticationToken(AuthenticationKeyRequest authenticationKeyRequest) {

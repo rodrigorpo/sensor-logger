@@ -1,7 +1,8 @@
 package com.br.rodrigo.pereira.sensorlogger.model.domain.interceptor;
 
+import com.br.rodrigo.pereira.sensorlogger.model.exceptions.BusinessException;
 import com.br.rodrigo.pereira.sensorlogger.model.exceptions.FormatExceptionType;
-import com.br.rodrigo.pereira.sensorlogger.model.exceptions.InvalidCredentialsException;
+import com.br.rodrigo.pereira.sensorlogger.model.exceptions.NotAllowedException;
 import com.br.rodrigo.pereira.sensorlogger.model.exceptions.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -21,8 +22,16 @@ public class GlobalHandler {
     }
 
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
-    @ExceptionHandler(InvalidCredentialsException.class)
-    public FormatExceptionType handleAuthenticationUnprocessableEntityException(InvalidCredentialsException e) {
+    @ExceptionHandler(BusinessException.class)
+    public FormatExceptionType handleUnprocessableEntityException(BusinessException e) {
+//        LOGGER.error("AuthenticationException:{}", e.getMessage(), e);
+        return new FormatExceptionType(e.getMessage(), e.getError(), LocalDateTime.now());
+    }
+
+
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler(NotAllowedException.class)
+    public FormatExceptionType handleANotAllowed(NotAllowedException e) {
 //        LOGGER.error("AuthenticationException:{}", e.getMessage(), e);
         return new FormatExceptionType(e.getMessage(), e.getError(), LocalDateTime.now());
     }

@@ -1,7 +1,7 @@
 package com.br.rodrigo.pereira.sensorlogger.model.domain.enums;
 
 public enum Privileges {
-    NORMAL,
+    OWNER,
     ADMNISTRATOR,
-    OWNER
+    NORMAL
 }

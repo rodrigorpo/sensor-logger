@@ -1,5 +1,7 @@
 package com.br.rodrigo.pereira.sensorlogger.model.domain.data.persistent.relational;
 
+import com.br.rodrigo.pereira.sensorlogger.model.domain.enums.Privileges;
+import com.br.rodrigo.pereira.sensorlogger.model.domain.enums.UserStatus;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -19,21 +21,34 @@ public class User implements Serializable {
 
     private Long userId;
 
+    @NotNull
     private String name;
 
     private String course;
 
+    @NotNull
     private LocalDate birthday;
 
-    @OneToOne(fetch = FetchType.LAZY)
     @NotNull
-    @JoinColumn(name = "users_identity")
-    private UserIdentity userIdentity;
+    @Column(unique = true)
+    private String username;
 
-    public User(String name, String course, LocalDate birthday, UserIdentity userIdentity){
+    @NotNull
+    private String password;
+
+    @Enumerated(EnumType.STRING)
+    private Privileges privileges;
+
+    @Enumerated(EnumType.STRING)
+    private UserStatus userStatus;
+
+    public User(String name, String course, LocalDate birthday, String username, String password, Privileges privileges, UserStatus userStatus){
         this.name = name;
         this.course = course;
         this.birthday = birthday;
-        this.userIdentity = userIdentity;
+        this.username = username;
+        this.password = password;
+        this.privileges = privileges;
+        this.userStatus = userStatus;
     }
 }

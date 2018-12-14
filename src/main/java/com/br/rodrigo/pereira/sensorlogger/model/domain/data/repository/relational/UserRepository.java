@@ -4,9 +4,12 @@ import com.br.rodrigo.pereira.sensorlogger.model.domain.data.persistent.relation
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface UserRepository extends CrudRepository<User, Long> {
-    User save(User user);
 
-    User findByUserIdentity_UserIdentityId(Long id);
+    User findByUsername(String username);
+
+    List<User> findAll();
 }

@@ -1,6 +1,6 @@
 package com.br.rodrigo.pereira.sensorlogger.services;
 
-import com.br.rodrigo.pereira.sensorlogger.model.util.configs.PropertiesConfig;
+import com.br.rodrigo.pereira.sensorlogger.util.configs.PropertiesConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
