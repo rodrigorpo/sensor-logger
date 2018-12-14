@@ -5,5 +5,6 @@ public enum OperationType {
     INSERT,
     UPDATE,
     DELETE,
-    SELECT
+    SELECT,
+    AUTHENTICATE
 }

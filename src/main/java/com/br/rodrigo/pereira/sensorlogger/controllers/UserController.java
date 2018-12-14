@@ -29,27 +29,27 @@ public class UserController {
     private ValidHeaderService validHeaderService;
 
     @PostMapping(value = "/create")
-    public ResponseEntity userCreate(
+    public ResponseEntity createUser(
             @RequestBody UserCreateRequest request) {
         userService.createUserRegister(request);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping(value = "/update-general")
-    public ResponseEntity userUpdateGeneral(@RequestBody UserUpdateRequest userUpdateRequest){
+    public ResponseEntity updateGeneralUser(@RequestBody UserUpdateRequest userUpdateRequest){
         userService.updateUserGeneralRegister(userUpdateRequest);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping(value = "/update-identity")
-    public ResponseEntity userUpdateIdentity(@RequestBody UserIdentityUpdateRequest userIdentityUpdateRequest){
+    public ResponseEntity updateUserIdentity(@RequestBody UserIdentityUpdateRequest userIdentityUpdateRequest){
         userService.updateUserIdentityRegister(userIdentityUpdateRequest);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping(value = "/delete")
-    public ResponseEntity userDelete(@RequestBody UserDeleteRequest deleteRequest){
-        userService.deleteUserIdentity(deleteRequest);
+    public ResponseEntity deleteUser(@RequestBody UserDeleteRequest deleteRequest){
+        userService.deleteUser(deleteRequest);
         return ResponseEntity.noContent().build();
     }
 
