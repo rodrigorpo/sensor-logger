@@ -8,7 +8,6 @@ import com.br.rodrigo.pereira.sensorlogger.model.domain.data.repository.relation
 import com.br.rodrigo.pereira.sensorlogger.model.domain.enums.OperationType;
 import com.br.rodrigo.pereira.sensorlogger.model.domain.enums.UserStatus;
 import com.br.rodrigo.pereira.sensorlogger.model.domain.requests.AuthenticationKeyRequest;
-import com.br.rodrigo.pereira.sensorlogger.model.domain.requests.AuthenticationUserRequest;
 import com.br.rodrigo.pereira.sensorlogger.model.exceptions.BusinessException;
 import com.br.rodrigo.pereira.sensorlogger.util.HttpDocument;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,23 +28,23 @@ public class AuthenticateService {
     @Autowired
     private LogRepository logRepository;
 
-    public AuthenticationData verifyCredentials(AuthenticationUserRequest authenticationUserRequest) {
+    public AuthenticationData verifyCredentials(AuthenticationData authenticationData) {
 
-        User userData = findByUsername(authenticationUserRequest.getUsername());
+        User userData = findByUsername(authenticationData.getUsername());
 
-        String passwordHashed = hashService.hashPassword(authenticationUserRequest.getPassword());
+        String passwordHashed = hashService.hashPassword(authenticationData.getPassword());
 
-        boolean isValidUsername = userData.getUsername().equals(authenticationUserRequest.getUsername());
+        boolean isValidUsername = userData.getUsername().equals(authenticationData.getUsername());
         boolean isValidPassword = userData.getPassword().equals(passwordHashed);
         boolean isActive = (userData.getUserStatus() == UserStatus.ACTIVE);
 
         if (!isValidUsername || !isValidPassword || !isActive) {
             BusinessException businessException = new BusinessException("Senha inválida ou usuário inativo!", HttpStatus.UNPROCESSABLE_ENTITY.toString());
-            logRepository.save(new Log(LocalDateTime.now(), OperationType.LOGIN, userData, null, null, new HttpDocument(HttpStatus.UNPROCESSABLE_ENTITY), businessException));
+            logRepository.save(new Log(OperationType.LOGIN, userData, null, null, new HttpDocument(HttpStatus.UNPROCESSABLE_ENTITY), businessException));
             throw businessException;
         }
 
-        logRepository.save(new Log(LocalDateTime.now(), OperationType.LOGIN, userData, null, null, new HttpDocument(HttpStatus.OK)));
+        logRepository.save(new Log(OperationType.LOGIN, userData, null, null, new HttpDocument(HttpStatus.OK)));
         return new AuthenticationData(userData.getUsername(), userData.getPrivileges());
     }
 
@@ -55,7 +54,7 @@ public class AuthenticateService {
 
         if (user == null) {
             BusinessException businessException = new BusinessException("Usuário não encontrado!", HttpStatus.UNPROCESSABLE_ENTITY.toString());
-            logRepository.save(new Log(LocalDateTime.now(), OperationType.LOGIN, null, null, null, new HttpDocument(HttpStatus.UNPROCESSABLE_ENTITY), businessException));
+            logRepository.save(new Log(OperationType.LOGIN, null, null, null, new HttpDocument(HttpStatus.UNPROCESSABLE_ENTITY), businessException));
             throw businessException;
         }
 

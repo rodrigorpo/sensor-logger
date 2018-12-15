@@ -5,6 +5,7 @@ import com.br.rodrigo.pereira.sensorlogger.model.domain.data.persistent.relation
 import com.br.rodrigo.pereira.sensorlogger.model.domain.data.repository.document.LogRepository;
 import com.br.rodrigo.pereira.sensorlogger.model.domain.data.repository.relational.UserRepository;
 import com.br.rodrigo.pereira.sensorlogger.model.domain.enums.OperationType;
+import com.br.rodrigo.pereira.sensorlogger.model.domain.enums.Privileges;
 import com.br.rodrigo.pereira.sensorlogger.model.exceptions.NotAllowedException;
 import com.br.rodrigo.pereira.sensorlogger.util.HttpDocument;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,18 +26,18 @@ public class ValidHeaderService {
     @Autowired
     private LogRepository logRepository;
 
-    public void validHeaderPermission(String header, Integer type){
+    public User validHeaderPermission(String header, Integer type){
 
-        String[] headerSplited = header.split("@");
-        User user = userRepository.findByUsername(headerSplited[0]);
+        String[] headerSplit = header.split("@");
+        User user = userRepository.findByUsername(headerSplit[0]);
 
         if(user == null){
-            NotAllowedException notAllowedException = new NotAllowedException("Usuário não existe!", HttpStatus.UNAUTHORIZED.toString());
+            NotAllowedException notAllowedException = new NotAllowedException("Usuário não encontrado!", HttpStatus.UNAUTHORIZED.toString());
             logRepository.save(new Log(LocalDateTime.now(), OperationType.AUTHENTICATE, null, null, null, new HttpDocument(HttpStatus.UNAUTHORIZED), notAllowedException));
             throw notAllowedException;
             }
 
-        if(!headerSplited[1].equalsIgnoreCase(getHeader())){
+        if(!headerSplit[1].equalsIgnoreCase(getHeader())){
             NotAllowedException notAllowedException = new NotAllowedException("Chave de acesso não permitida!", HttpStatus.UNAUTHORIZED.toString());
             logRepository.save(new Log(LocalDateTime.now(), OperationType.AUTHENTICATE, null, null, null, new HttpDocument(HttpStatus.UNAUTHORIZED), notAllowedException));
             throw notAllowedException;
@@ -44,23 +45,24 @@ public class ValidHeaderService {
 
         switch(type){
             case 1:
-                if(!user.getUserStatus().toString().equals("OWNER")){
-                    thowExceptionAndLogIt(user);
+                if(!user.getUserStatus().equals(Privileges.OWNER)){
+                    throwsExceptionAndLogIt(user);
                 }
                 break;
             case 2:
-                if(!user.getPrivileges().toString().equals("ADMNISTRATOR") && !user.getPrivileges().toString().equals("OWNER")){
-                    thowExceptionAndLogIt(user);
+                if(!user.getPrivileges().equals(Privileges.ADMNISTRATOR) && !user.getPrivileges().equals(Privileges.OWNER)){
+                    throwsExceptionAndLogIt(user);
                 }
                 break;
             default:
                 break;
         }
+        return user;
     }
 
-    private void thowExceptionAndLogIt(User user){
+    private void throwsExceptionAndLogIt(User user){
         NotAllowedException notAllowedException = new NotAllowedException("Privilégios insucificentes para acesar o recurso!", HttpStatus.UNAUTHORIZED.toString());
-        logRepository.save(new Log(LocalDateTime.now(), OperationType.AUTHENTICATE, user, null, null, new HttpDocument(HttpStatus.UNAUTHORIZED), notAllowedException));
+        logRepository.save(new Log(OperationType.AUTHENTICATE, user, null, null, new HttpDocument(HttpStatus.UNAUTHORIZED), notAllowedException));
         throw notAllowedException;
     }
 

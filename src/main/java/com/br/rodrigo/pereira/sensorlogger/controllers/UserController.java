@@ -30,38 +30,42 @@ public class UserController {
 
     @PostMapping(value = "/create")
     public ResponseEntity createUser(
-            @RequestBody UserCreateRequest request) {
-        userService.createUserRegister(request);
+            @RequestBody UserCreateRequest userCreateRequest) {
+        userService.createUserRegister(userMapper.userCreateRequestToUserCreateData(userCreateRequest));
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping(value = "/update-general")
-    public ResponseEntity updateGeneralUser(@RequestBody UserUpdateRequest userUpdateRequest){
-        userService.updateUserGeneralRegister(userUpdateRequest);
+    @PutMapping(value = "/update-general/{username}")
+    public ResponseEntity updateGeneralUser(@RequestHeader String token, @PathVariable String username,
+                                            @RequestBody UserUpdateRequest userUpdateRequest) {
+        validHeaderService.validHeaderPermission(token, 3);
+        userService.updateUserGeneralRegister(userMapper.userUpdateDataFromUserUpdate(userUpdateRequest, username));
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping(value = "/update-identity")
-    public ResponseEntity updateUserIdentity(@RequestBody UserIdentityUpdateRequest userIdentityUpdateRequest){
-        userService.updateUserIdentityRegister(userIdentityUpdateRequest);
+    @PutMapping(value = "/update-identity/{username}")
+    public ResponseEntity updateUserIdentity(@RequestHeader String token, @PathVariable String username, @RequestBody UserIdentityUpdateRequest userIdentityUpdateRequest) {
+        validHeaderService.validHeaderPermission(token, 3);
+        userService.updateUserIdentityRegister(userMapper.userIdentityUpdateRequestToUserIdentityUpdateData(userIdentityUpdateRequest, username));
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping(value = "/delete")
-    public ResponseEntity deleteUser(@RequestBody UserDeleteRequest deleteRequest){
-        userService.deleteUser(deleteRequest);
+    public ResponseEntity deleteUser(@RequestHeader String token, @RequestBody UserDeleteRequest userDeleteRequest) {
+        validHeaderService.validHeaderPermission(token, 3);
+        userService.deleteUser(userMapper.userDeleteRequestToUserDeleteData(userDeleteRequest));
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping(value = "/all")
-    public ResponseEntity<List<UserResponse>> allUserList(@RequestHeader String token){
+    public ResponseEntity<List<UserResponse>> allUserList(@RequestHeader String token) {
         validHeaderService.validHeaderPermission(token, 2);
         List<User> user = userService.getAllUsers();
         return ResponseEntity.ok(userMapper.userListToUserResponseList(user));
     }
 
     @GetMapping(value = "/{username}")
-    public ResponseEntity<UserResponse> singleUser(@RequestHeader String token, @PathVariable String username){
+    public ResponseEntity<UserResponse> singleUser(@RequestHeader String token, @PathVariable String username) {
         validHeaderService.validHeaderPermission(token, 3);
         User user = userService.getUser(username, token);
         return ResponseEntity.ok(userMapper.userToUserResponse(user));

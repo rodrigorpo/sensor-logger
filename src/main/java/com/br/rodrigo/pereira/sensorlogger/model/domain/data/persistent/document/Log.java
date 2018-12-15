@@ -4,6 +4,7 @@ import com.br.rodrigo.pereira.sensorlogger.model.domain.data.persistent.relation
 import com.br.rodrigo.pereira.sensorlogger.model.domain.data.persistent.relational.Measures;
 import com.br.rodrigo.pereira.sensorlogger.model.domain.data.persistent.relational.User;
 import com.br.rodrigo.pereira.sensorlogger.model.domain.enums.OperationType;
+import com.br.rodrigo.pereira.sensorlogger.model.exceptions.BusinessException;
 import com.br.rodrigo.pereira.sensorlogger.util.HttpDocument;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -33,8 +34,18 @@ public class Log implements Serializable {
 
     private RuntimeException exception;
 
-    public Log(LocalDateTime instant, OperationType operationType, User user, Measures measures, Location location, HttpDocument httpDocument){
-        this.instant = instant;
+    public Log(OperationType operationType, User user, Measures measures, Location location, HttpDocument httpDocument, RuntimeException exception) {
+        this.instant = LocalDateTime.now();
+        this.operationType = operationType;
+        this.user = user;
+        this.measures = measures;
+        this.location = location;
+        this.httpStatus = httpDocument;
+        this.exception = exception;
+    }
+
+    public Log(OperationType operationType, User user, Measures measures, Location location, HttpDocument httpDocument) {
+        this.instant = LocalDateTime.now();
         this.operationType = operationType;
         this.user = user;
         this.measures = measures;

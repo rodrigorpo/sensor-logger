@@ -3,7 +3,7 @@ package com.br.rodrigo.pereira.sensorlogger.controllers;
 import com.br.rodrigo.pereira.sensorlogger.model.domain.data.AuthenticationData;
 import com.br.rodrigo.pereira.sensorlogger.model.domain.mappers.AuthenticationMapper;
 import com.br.rodrigo.pereira.sensorlogger.model.domain.requests.AuthenticationKeyRequest;
-import com.br.rodrigo.pereira.sensorlogger.model.domain.requests.AuthenticationUserRequest;
+import com.br.rodrigo.pereira.sensorlogger.model.domain.requests.AuthenticationRequest;
 import com.br.rodrigo.pereira.sensorlogger.model.domain.responses.AuthenticationResponse;
 import com.br.rodrigo.pereira.sensorlogger.services.AuthenticateService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,9 +24,9 @@ public class AuthenticationController {
 
 
     @PostMapping(value = "/authenticate")
-    public ResponseEntity<AuthenticationResponse> authenticate(
-            @RequestBody AuthenticationUserRequest request) {
-        AuthenticationData authenticationData = authenticateService.verifyCredentials(request);
+    public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest authenticationRequest) {
+        AuthenticationData authenticationData = authenticateService.verifyCredentials
+                (authenticationMapper.authenticationRequestToAuthenticationData(authenticationRequest));
         return ResponseEntity.ok(authenticationMapper.authenticationDataToAuthenticationResponse(authenticationData));
     }
 
