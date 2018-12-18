@@ -4,13 +4,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
+import javax.validation.constraints.NotNull;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserDeleteRequest {
+public class AuthenticationRequest {
+    @NotNull
     private String username;
+    @NotNull
     private String password;
-    private LocalDate birthday;
 }

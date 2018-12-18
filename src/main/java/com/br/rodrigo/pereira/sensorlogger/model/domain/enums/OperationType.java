@@ -6,5 +6,7 @@ public enum OperationType {
     UPDATE,
     DELETE,
     SELECT,
-    AUTHENTICATE
+    AUTHENTICATE,
+    TURNON,
+    TURNOFF
 }

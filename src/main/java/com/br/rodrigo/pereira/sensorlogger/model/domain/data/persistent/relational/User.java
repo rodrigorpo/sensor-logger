@@ -18,12 +18,10 @@ public class User implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-
     private Long userId;
 
     @NotNull
     private String name;
-
     private String course;
 
     @NotNull
@@ -42,7 +40,7 @@ public class User implements Serializable {
     @Enumerated(EnumType.STRING)
     private UserStatus userStatus;
 
-    public User(String name, String course, LocalDate birthday, String username, String password, Privileges privileges, UserStatus userStatus){
+    public User(String name, String course, LocalDate birthday, String username, String password, Privileges privileges, UserStatus userStatus) {
         this.name = name;
         this.course = course;
         this.birthday = birthday;

@@ -5,18 +5,17 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
-import java.time.LocalDate;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserUpdateRequest {
+public class LocationCreateRequest {
     @NotNull
     private String name;
     @NotNull
-    private String course;
+    private String city;
     @NotNull
-    private LocalDate birthday;
+    private String province;
     @NotNull
-    private String password;
+    private String country;
 }
