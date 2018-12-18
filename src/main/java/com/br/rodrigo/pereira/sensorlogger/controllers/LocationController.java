@@ -57,25 +57,25 @@ public class LocationController {
 
     @GetMapping(value = "/all")
     public ResponseEntity<List<Location>> findAllLocations(@RequestHeader String token) {
-        User user = validHeaderService.validHeaderPermission(token, 3);
+        User user = validHeaderService.validHeaderPermission(token, 2);
         return ResponseEntity.ok(locationService.getLocationList(user));
     }
 
     @GetMapping(value = "/all/city/{name}")
     public ResponseEntity<List<Location>> findAllLocationsByCity(@RequestHeader String token, @PathVariable String name) {
-        User user = validHeaderService.validHeaderPermission(token, 3);
+        User user = validHeaderService.validHeaderPermission(token, 2);
         return ResponseEntity.ok(locationService.getLocationListByType(user, "city", name));
     }
 
     @GetMapping(value = "/all/province/{name}")
     public ResponseEntity<List<Location>> findAllLocationsByProvince(@RequestHeader String token, @PathVariable String name) {
-        User user = validHeaderService.validHeaderPermission(token, 3);
+        User user = validHeaderService.validHeaderPermission(token, 2);
         return ResponseEntity.ok(locationService.getLocationListByType(user, "province", name));
     }
 
     @GetMapping(value = "/all/country/{name}")
     public ResponseEntity<List<Location>> findAllLocationsByCountry(@RequestHeader String token, @PathVariable String name) {
-        User user = validHeaderService.validHeaderPermission(token, 3);
+        User user = validHeaderService.validHeaderPermission(token, 2);
         return ResponseEntity.ok(locationService.getLocationListByType(user, "country", name));
     }
 

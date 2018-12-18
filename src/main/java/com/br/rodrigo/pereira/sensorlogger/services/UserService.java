@@ -82,7 +82,7 @@ public class UserService {
     }
 
     public void deleteUser(UserDeleteData userDeleteData) {
-        User user = verifyUserByUsername(userDeleteData.getUsername(), "Usuário não existe!", OperationType.DELETE);
+        User user = verifyUserByUsername(userDeleteData.getUsername(), "Usuário não encontrado!", OperationType.DELETE);
 
         if (!user.getPassword().equals(hashService.hashPassword(userDeleteData.getPassword())) || !user.getBirthday().equals(userDeleteData.getBirthday())) {
             BusinessException businessException = new BusinessException("Não foi possível proceder o delete. Dados incorretos!", HttpStatus.UNPROCESSABLE_ENTITY.toString());
@@ -125,6 +125,7 @@ public class UserService {
 
     public User getUser(String username, String token) {
         String[] tokenSplited = token.split("@");
+        verifyUserByUsername(username, "Usuário não encontrado!", OperationType.SELECT);
 
         if (!tokenSplited[0].equals(username)) {
             BusinessException businessException = new BusinessException("Você só pode buscar pelo seu usuário", HttpStatus.UNPROCESSABLE_ENTITY.toString());

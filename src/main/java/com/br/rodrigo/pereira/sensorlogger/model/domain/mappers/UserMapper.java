@@ -1,9 +1,6 @@
 package com.br.rodrigo.pereira.sensorlogger.model.domain.mappers;
 
-import com.br.rodrigo.pereira.sensorlogger.model.domain.data.UserCreateData;
-import com.br.rodrigo.pereira.sensorlogger.model.domain.data.UserDeleteData;
-import com.br.rodrigo.pereira.sensorlogger.model.domain.data.UserIdentityUpdateData;
-import com.br.rodrigo.pereira.sensorlogger.model.domain.data.UserUpdateData;
+import com.br.rodrigo.pereira.sensorlogger.model.domain.data.*;
 import com.br.rodrigo.pereira.sensorlogger.model.domain.data.persistent.relational.User;
 import com.br.rodrigo.pereira.sensorlogger.model.domain.requests.UserCreateRequest;
 import com.br.rodrigo.pereira.sensorlogger.model.domain.requests.UserDeleteRequest;
@@ -38,10 +35,18 @@ public interface UserMapper {
     default UserIdentityUpdateData userIdentityUpdateRequestToUserIdentityUpdateData
             (UserIdentityUpdateRequest userIdentityUpdateRequest, String oldUsername) {
         return UserIdentityUpdateData.builder()
-                .oldPassword(oldUsername)
+                .oldUsername(oldUsername)
                 .newUsername(userIdentityUpdateRequest.getNewUsername())
                 .oldPassword(userIdentityUpdateRequest.getOldPassword())
                 .newPassword(userIdentityUpdateRequest.getNewPassword())
                 .userStatus(userIdentityUpdateRequest.getUserStatus()).build();
+    }
+
+    default UserMinimalData userToUserMinimalData(User user) {
+        return UserMinimalData.builder()
+                .userId(user.getUserId())
+                .name(user.getName())
+                .username(user.getUsername())
+                .privileges(user.getPrivileges()).build();
     }
 }

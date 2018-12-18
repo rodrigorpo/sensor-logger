@@ -58,7 +58,8 @@ public class LocationService {
 
     public void deleteUser(String locationName, User user) {
         Location locationToDelete = verifyLocation(locationName, user, OperationType.DELETE);
-        if (!user.equals(logRepository.findByLocation(locationToDelete).getUser()) && user.getPrivileges().equals(Privileges.NORMAL)) {
+        // !user.equals(logRepository.findByLocation(locationToDelete).getUser()) &&
+        if (user.getPrivileges().equals(Privileges.NORMAL)) {
             BusinessException businessException = new BusinessException("Não foi você que inseriu essa localização!", HttpStatus.UNPROCESSABLE_ENTITY.toString());
             logRepository.save(new Log(OperationType.DELETE, user, null, locationToDelete, new HttpDocument(HttpStatus.UNPROCESSABLE_ENTITY), businessException));
             throw businessException;

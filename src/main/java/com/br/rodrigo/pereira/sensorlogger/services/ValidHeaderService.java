@@ -33,19 +33,19 @@ public class ValidHeaderService {
 
         if(user == null){
             NotAllowedException notAllowedException = new NotAllowedException("Usuário não encontrado!", HttpStatus.UNAUTHORIZED.toString());
-            logRepository.save(new Log(LocalDateTime.now(), OperationType.AUTHENTICATE, null, null, null, new HttpDocument(HttpStatus.UNAUTHORIZED), notAllowedException));
+            logRepository.save(new Log(OperationType.AUTHENTICATE, null, null, null, new HttpDocument(HttpStatus.UNAUTHORIZED), notAllowedException));
             throw notAllowedException;
             }
 
         if(!headerSplit[1].equalsIgnoreCase(getHeader())){
             NotAllowedException notAllowedException = new NotAllowedException("Chave de acesso não permitida!", HttpStatus.UNAUTHORIZED.toString());
-            logRepository.save(new Log(LocalDateTime.now(), OperationType.AUTHENTICATE, null, null, null, new HttpDocument(HttpStatus.UNAUTHORIZED), notAllowedException));
+            logRepository.save(new Log(OperationType.AUTHENTICATE, null, null, null, new HttpDocument(HttpStatus.UNAUTHORIZED), notAllowedException));
             throw notAllowedException;
         }
 
         switch(type){
             case 1:
-                if(!user.getUserStatus().equals(Privileges.OWNER)){
+                if(!user.getPrivileges().equals(Privileges.OWNER)){
                     throwsExceptionAndLogIt(user);
                 }
                 break;
