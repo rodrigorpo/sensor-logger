@@ -13,7 +13,7 @@ public interface MeasureMapper {
 
     default MeasureResponse measureRequestAndRawDataToMeasureResponse(Measure measure) {
         return MeasureResponse.builder()
-                .userMinimalData(measure.getUserMinimalData())
+                .user(measure.getUser())
                 .location(measure.getLocation())
                 .airHumidity(measure.getAirHumidity())
                 .airTemperature(measure.getAirTemperature())
