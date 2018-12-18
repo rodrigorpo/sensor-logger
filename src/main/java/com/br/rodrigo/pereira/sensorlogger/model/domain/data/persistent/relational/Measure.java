@@ -22,7 +22,7 @@ public class Measure implements Serializable {
     private BigDecimal airHumidity;
     private Long soilHumidity;
     private Long lighting;
-    private UserMinimalData userMinimalData;
+    private UserMinimalData user;
     private Location location;
 
     public Measure(BigDecimal airHumidity, BigDecimal airTemperature, Long soilHumidity, Long lighting, UserMinimalData userMinimalData, Location location) {
@@ -30,7 +30,7 @@ public class Measure implements Serializable {
         this.airHumidity = airHumidity;
         this.soilHumidity = soilHumidity;
         this.lighting = lighting;
-        this.userMinimalData = userMinimalData;
+        this.user = userMinimalData;
         this.location = location;
     }
 

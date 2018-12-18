@@ -20,6 +20,6 @@ public class MeasureResponse {
     private BigDecimal airHumidity;
     private Long soilHumidity;
     private Long lighting;
-    private UserMinimalData userMinimalData;
+    private UserMinimalData user;
     private Location location;
 }
